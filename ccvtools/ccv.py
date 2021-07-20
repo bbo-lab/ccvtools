@@ -1,7 +1,7 @@
 import os,sys
 import numpy as np
 import imageio
-import rawio
+from ccvtools import rawio
 import random
 import string
 
@@ -52,9 +52,9 @@ def truncate(ccv_file,idx_range,ccv_out_file=None):
     frcount_offset = int((8*32 + 64 +8)/8 + camera_type_len + image_type_len)
 
     if ccv_out_file is None:
-        ccv_tmp_file = f'.{ccv_file[0:-4]}_{''.join(random.choices(string.ascii_uppercase + string.digits, k=5))}_truncate.tmp'
+        ccv_tmp_file = f'.{ccv_file[0:-4]}_{"".join(random.choices(string.ascii_uppercase + string.digits, k=5))}_truncate.tmp'
     else:
-        ccv_tmp_file = f'.{ccv_out_file[0:-4]}_{''.join(random.choices(string.ascii_uppercase + string.digits, k=5))}_truncate.tmp'
+        ccv_tmp_file = f'.{ccv_out_file[0:-4]}_{"".join(random.choices(string.ascii_uppercase + string.digits, k=5))}_truncate.tmp'
         
     with open(ccv_file,'rb') as sourcefile:
         with open(ccv_tmp_file,'wb') as targetfile:
@@ -95,7 +95,7 @@ def convert(ccv_file,video_file,idx_range,fps=25,min_contrast=0,max_contrast=Non
     writer = imageio.get_writer(ccv_file_out, fps=fps, codec="libx264")
 
     prev_idx=None
-    for (i,fr_idx) in enumerate(idx_range)
+    for (i,fr_idx) in enumerate(idx_range):
         # Get max value of movie if not specified
         if i==0 and max_contrast is None:
             max_contrast = np.iinfo(np.asarray(im).dtype).max
