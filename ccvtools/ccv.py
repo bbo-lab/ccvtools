@@ -1,3 +1,5 @@
+# (c) 2021 Kay-Michael Voit <kay@voits.net>
+
 import os,sys
 import numpy as np
 import imageio
@@ -89,28 +91,27 @@ def truncate(ccv_file,idx_range,ccv_out_file=None):
     os.rename(ccv_tmp_file,ccv_out_file)
 
     
-def convert(ccv_file,video_file,idx_range,fps=25,min_contrast=0,max_contrast=None,out_type=np.uint8):
+def convert(ccv_file,video_file,idx_range,fps=25,codec="libx264",min_contrast=0,max_contrast=None,out_type=np.uint8):
     reader = imageio.get_reader(ccv_file)
-    reader.set_image_index(np.uint64(start_frame-1))
-    writer = imageio.get_writer(ccv_file_out, fps=fps, codec="libx264")
+    writer = imageio.get_writer(video_file, fps=fps, codec=codec)
 
-    prev_idx=None
+    prev_fr_idx=None
     for (i,fr_idx) in enumerate(idx_range):
-        # Get max value of movie if not specified
-        if i==0 and max_contrast is None:
-            max_contrast = np.iinfo(np.asarray(im).dtype).max
-            
         # Set point in case iterator is not consecutive
         if prev_fr_idx is None or not fr_idx-prev_fr_idx==1:
             im = reader.get_data(fr_idx)
         else:
             im = reader.get_next_data()
         
+        # Get max value of movie if not specified
+        if i==0 and max_contrast is None:
+            max_contrast = np.iinfo(np.asarray(im).dtype).max
+                
         # Adjust contrast / Reduce to 8 bit
         im = np.uint64(im)
         im = (im-min_contrast)*np.iinfo(out_type).max/(max_contrast-min_contrast)
         im[im<0] = 0
-        im[im>max_original] = np.iinfo(out_type).max
+        im[im>max_contrast] = np.iinfo(out_type).max
         writer.append_data(out_type(im))
         prev_fr_idx = fr_idx
 

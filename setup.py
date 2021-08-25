@@ -8,8 +8,8 @@ README = (HERE / "README.md").read_text()
 
 # This call to setup() does all the work
 setup(
-    name="bbo_ccvtools",
-    version="1.0.0",
+    name="bbo-ccvtools",
+    version="1.1.0",
     description="Work with BBO CCV files",
     long_description=README,
     long_description_content_type="text/markdown",
