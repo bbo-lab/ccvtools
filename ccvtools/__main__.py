@@ -11,7 +11,7 @@ def main():
     parser.add_argument('--action', '-a', required=True, nargs=1, choices=("convert",))
     parser.add_argument('--outfile', '-o', required=False, nargs=1, type=str)
     
-    parser.add_argument('--fps', required=False, default=25, nargs=1, type=int)
+    parser.add_argument('--fps', required=False, default=[25], nargs=1, type=int)
     parser.add_argument('--idxrange', required=False, nargs=2, type=int, help="Index range. Attention! Python indexing!")
     
     args = parser.parse_args()
@@ -32,7 +32,7 @@ def main():
         if args.outfile is None:
             video_file = args.CCV_FILE+'.mkv';
         else:
-            video_file = args.outfile;
+            video_file = args.outfile[0];
         
         ccv.convert(args.CCV_FILE,video_file,idx_range,fps=args.fps[0],codec="libx264",min_contrast=0,max_contrast=None)
         
