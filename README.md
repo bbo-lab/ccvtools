@@ -1,6 +1,6 @@
 Includes imageio filter and some tools to work with the CCV data format, used by the BBO lab at caesar research center
 
-
+```from ccvtools import rawio``` to add ccv support to imageio.
 
 Create a compressed movie with
 ```python -m ccvtools -a convert --fps 200 [ccv_file]```
