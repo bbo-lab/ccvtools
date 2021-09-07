@@ -98,12 +98,18 @@ def convert(ccv_file,video_file,idx_range,fps=25,codec="libx264",quality=10,min_
     writer = imageio.get_writer(video_file, fps=fps, codec=codec, quality=quality)
 
     prev_fr_idx=None
+    indices = np.zeros(shape=len(idx_range),dtype=int)
+    timestamps = np.zeros(shape=len(idx_range),dtype=np.float)
     for (i,fr_idx) in enumerate(idx_range):
         # Set point in case iterator is not consecutive
         if prev_fr_idx is None or not fr_idx-prev_fr_idx==1:
             im = reader.get_data(fr_idx)
         else:
             im = reader.get_next_data()
+        
+        meta = reader.get_meta_data(fr_idx);
+        indices[i] = meta["index"];
+        timestamps[i] = meta["timestamp"];
         
         # Get max value of movie if not specified
         if i==0 and max_contrast is None:
@@ -129,6 +135,11 @@ def convert(ccv_file,video_file,idx_range,fps=25,codec="libx264",quality=10,min_
                             'exposure': headerdict['sensor'].exposure,
                             'gain': headerdict['sensor'].gain
                            }
+    headerdict['indices'] = [int(val) for val in indices]
+    print(timestamps)
+    headerdict['timestamps'] = [float(val) for val in timestamps]
+    print(headerdict['timestamps'])
+    
     if len(headerdict['sensor']['offset'])==1: headerdict['sensor']['offset'].append(headerdict['sensor']['offset'][0])
     if len(headerdict['sensor']['size'])==1: headerdict['sensor']['size'].append(headerdict['sensor']['size'][0])
     
