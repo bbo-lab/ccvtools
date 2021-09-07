@@ -6,6 +6,8 @@ import imageio
 from ccvtools import rawio
 import random
 import string
+import mutagen
+import json
 
 def fill(full_times_file,ccv_file,ccv_times_file):
     ccv_out_file = ccv_file[0:-4]+'_filled'+ccv_file[-4:]
@@ -91,9 +93,9 @@ def truncate(ccv_file,idx_range,ccv_out_file=None):
     os.rename(ccv_tmp_file,ccv_out_file)
 
     
-def convert(ccv_file,video_file,idx_range,fps=25,codec="libx264",min_contrast=0,max_contrast=None,out_type=np.uint8):
+def convert(ccv_file,video_file,idx_range,fps=25,codec="libx264",quality=10,min_contrast=0,max_contrast=None,out_type=np.uint8):
     reader = imageio.get_reader(ccv_file)
-    writer = imageio.get_writer(video_file, fps=fps, codec=codec)
+    writer = imageio.get_writer(video_file, fps=fps, codec=codec, quality=quality)
 
     prev_fr_idx=None
     for (i,fr_idx) in enumerate(idx_range):
@@ -116,3 +118,21 @@ def convert(ccv_file,video_file,idx_range,fps=25,codec="libx264",min_contrast=0,
         prev_fr_idx = fr_idx
 
     writer.close()
+
+    headerdict = dict(reader.header)
+    del headerdict['_io']
+    headerdict['camera_type'] = headerdict['camera_type'].data.decode("ascii")
+    headerdict['image_type'] = headerdict['image_type'].data.decode("ascii")
+    headerdict['sensor'] = {'offset': list(headerdict['sensor'].offset),
+                            'size': list(headerdict['sensor'].size),
+                            'clock': headerdict['sensor'].clock,
+                            'exposure': headerdict['sensor'].exposure,
+                            'gain': headerdict['sensor'].gain
+                           }
+    if len(headerdict['sensor']['offset'])==1: headerdict['sensor']['offset'].append(headerdict['sensor']['offset'][0])
+    if len(headerdict['sensor']['size'])==1: headerdict['sensor']['size'].append(headerdict['sensor']['size'][0])
+    
+    with open(video_file, 'r+b') as file:
+        media_file = mutagen.File(file, easy=True)
+        media_file['description'] = json.dumps(headerdict)
+        media_file.save(file)
