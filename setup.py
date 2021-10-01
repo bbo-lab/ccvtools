@@ -9,7 +9,7 @@ README = (HERE / "README.md").read_text()
 # This call to setup() does all the work
 setup(
     name="bbo-ccvtools",
-    version="1.1.5",
+    version="1.1.6",
     description="Work with BBO CCV files",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -26,5 +26,5 @@ setup(
     ],
     packages=['ccvtools','ccvtools.rawio'],
     include_package_data=True,
-    install_requires=["construct", "numpy", "imageio", "imageio-ffmpeg", "json", "mutagen"],
+    install_requires=["construct", "numpy", "imageio", "imageio-ffmpeg", "pyjson", "mutagen"],
 )
