@@ -1,3 +1,5 @@
+Install with `pip install bbo-ccvtools`.
+
 Includes imageio filter and some tools to work with the CCV data format, used by the BBO lab at caesar research center
 
 ```from ccvtools import rawio``` to add ccv support to imageio.
