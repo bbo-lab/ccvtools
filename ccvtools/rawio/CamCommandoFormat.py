@@ -7,6 +7,7 @@ import numpy as np
 
 from construct import this, Struct, Bytes, Const, If, Int64ul, Int32ul, Float64l, Byte
 
+from .utils import *
 
 GreenbergString = Struct(
     "length" / Int32ul,  # > 1 < 1e3
@@ -58,10 +59,11 @@ class CamCommandoFormat(Format):
             header = CamCommandoHeader.parse(request.firstbytes)
             # Newer file version not supported
             assert (header.header_version <= 0.13)
-            # Pack files are not supported
-            assert (not header.packed)
-            # Other pixel sizes not supported
-            assert (header.bits_per_pixel == 8)
+            # Packed files with 10 bits per pixel and unpacked files with 8 bits per pixel are supported.
+            if header.packed:
+                assert header.bits_per_pixel == 10
+            else:
+                assert header.bits_per_pixel == 8
             # ToDo: Check file size based on frame count and replace asserts
         except:
             return False
@@ -100,7 +102,18 @@ class CamCommandoFormat(Format):
 
             # Read frame from file
             dimension = (self.header.height, self.header.width)
-            frame = np.fromfile(self.request.get_file(), np.uint8, dimension[0] * dimension[1]).reshape(dimension)
+            if self.header.packed:
+                # Packed files with 10 bits per pixel
+                rawdata = np.fromfile(self.request.get_file(), np.uint8,
+                                      np.int(np.ceil(dimension[0] * dimension[1] * self.header.bits_per_pixel / 8)))
+                
+                unpacked = unpack_bits_16_10(rawdata)
+                unpacked = unpacked.astype('uint16').reshape(-1, 2)
+                
+                frame = ((unpacked[:, 1] << 8) | unpacked[:, 0]).reshape(dimension)
+            else:
+                # Unpacked files with 8 bits per pixel
+                frame = np.fromfile(self.request.get_file(), np.uint8, dimension[0] * dimension[1]).reshape(dimension)
 
             # Read in additional fields
             index = Int32ul.parse_stream(self.request.get_file())
