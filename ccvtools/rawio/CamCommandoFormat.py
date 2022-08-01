@@ -110,6 +110,7 @@ class CamCommandoFormat(Format):
                 unpacked = unpack_bits_16_10(rawdata)
                 unpacked = unpacked.astype('uint16').reshape(-1, 2)
                 
+                # Function 'unpack_bits_16_10' returns two bytes for each pixel. The pixel value is further calculated from these two bytes.
                 frame = ((unpacked[:, 1] << 8) | unpacked[:, 0]).reshape(dimension)
             else:
                 # Unpacked files with 8 bits per pixel
