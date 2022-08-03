@@ -3,8 +3,8 @@ import numpy as np
 
 def unpack_bits_16_10(input_array: np.ndarray):
   
-    """Unpack 16 bits from 10 bits or 8 bytes from 5 bytes. Two unpacked bytes are equivalent to one sample (or pixel)."""
-    # Written based on bboanalysis_m/datamanipulation/unpack_bits.cpp and C++ funtion 'unpack_bits_16_10'.
+    """Unpacks data into uint16 values from uint8 packed values. Length of each sample(or pixel) is 10 bits."""
+    # Written based on bboanalysis_m/datamanipulation/unpack_bits.cpp and C++ funtion 'unpack_bits_16_10' in 'bboanalysis_m/camera cpp code/dgpackbits.h'.
 
     nbytes_in = input_array.size
     nsamples_in = int(np.floor(nbytes_in * 8.0 / 10.0))
@@ -55,5 +55,9 @@ def unpack_bits_16_10(input_array: np.ndarray):
                 output_array[byte_offset_out + 4] = (input_array[byte_offset_in + 2] >> 4) | \
                                                     (input_array[byte_offset_in + 3] << 4)
                 output_array[byte_offset_out + 5] = (input_array[byte_offset_in + 3] >> 4) & 3
-
+    
+    # Two unpacked bytes per pixel are processed into uint16 value.
+    output_array = output_array.astype('uint16').reshape(-1, 2)
+    output_array = (output_array[:, 1] << 8) | output_array[:, 0]
+    
     return output_array
