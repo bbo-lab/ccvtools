@@ -13,7 +13,7 @@ def main():
     
     parser.add_argument('--fps', required=False, default=[25], nargs=1, type=int)
     parser.add_argument('--codec', required=False, default=['libx264'], nargs=1, type=str)
-    parser.add_argument('--quality', required=False, default=[10], nargs=1, type=str)
+    parser.add_argument('--quality', required=False, default=[10], nargs=1, type=int)
     parser.add_argument('--idxrange', required=False, nargs=2, type=int, help="Index range. Attention! Python indexing!")
     
     args = parser.parse_args()
@@ -38,7 +38,7 @@ def main():
 
         if not video_file[-4:]=='.mp4': video_file = video_file + '.mp4'
         print(video_file)
-        ccv.convert(args.CCV_FILE,video_file,idx_range,fps=args.fps[0],codec=args.codec[0],quality=10,min_contrast=0,max_contrast=None)
+        ccv.convert(args.CCV_FILE,video_file,idx_range,fps=args.fps[0],codec=args.codec[0],quality=args.quality[0],min_contrast=0,max_contrast=None)
         
 
 if __name__ == "__main__":

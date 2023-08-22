@@ -109,7 +109,7 @@ def convert(ccv_file, video_file, idx_range, fps=25, codec="libx264", quality=10
 
     prev_fr_idx = None
     indices = np.zeros(shape=len(idx_range), dtype=int)
-    timestamps = np.zeros(shape=len(idx_range), dtype=np.float)
+    timestamps = np.zeros(shape=len(idx_range), dtype=np.float64)
     for (i, fr_idx) in enumerate(idx_range):
         # Set point in case iterator is not consecutive
         if prev_fr_idx is None or not fr_idx - prev_fr_idx == 1:
