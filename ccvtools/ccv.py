@@ -137,8 +137,10 @@ def convert(ccv_file, video_file, idx_range, fps=25, codec="libx264", quality=10
 
         # Adjust contrast / Reduce to 8 bit
         cp.clip(im, min_contrast, max_contrast, out=im)
-        im = np.uint64(im)
-        im = (im - min_contrast) * np.iinfo(out_type).max / (max_contrast - min_contrast)
+        im -= min_contrast
+        if np.iinfo(out_type).max != max_contrast - min_contrast:
+            im = np.uint64(im)
+            im = im * np.iinfo(out_type).max / (max_contrast - min_contrast)
         writer.append_data(out_type(im))
         prev_fr_idx = fr_idx
 
