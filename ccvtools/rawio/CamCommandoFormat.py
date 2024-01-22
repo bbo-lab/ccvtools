@@ -105,7 +105,7 @@ class CamCommandoFormat(Format):
             if self.header.packed:
                 # Packed files with 10 bits per pixel
                 rawdata = np.fromfile(self.request.get_file(), np.uint8,
-                                      np.int(np.ceil(dimension[0] * dimension[1] * self.header.bits_per_pixel / 8)))
+                                      int(np.ceil(dimension[0] * dimension[1] * self.header.bits_per_pixel / 8)))
                 frame = unpack_bits_16_10(rawdata).reshape(dimension)  # type: np.uint16
                 
             else:
