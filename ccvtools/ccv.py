@@ -108,7 +108,7 @@ def convert(ccv_file, video_file, idx_range, fps=25, codec="libx264", quality=10
         idx_range = range(reader.header.frame_count)
 
     prev_fr_idx = None
-    indices = np.zeros(shape=len(idx_range), dtype=int)
+    indices = np.zeros(shape=len(idx_range), dtype=np.int64)
     timestamps = np.zeros(shape=len(idx_range), dtype=np.float64)
     for (i, fr_idx) in enumerate(idx_range):
         # Set point in case iterator is not consecutive
@@ -135,7 +135,7 @@ def convert(ccv_file, video_file, idx_range, fps=25, codec="libx264", quality=10
         if i == 0 and max_contrast is None:
             max_contrast = np.iinfo(np.asarray(im).dtype).max
 
-        # Adjust contrast / Reduce to 8 bit
+        # Adjust contrast
         np.clip(im, min_contrast, max_contrast, out=im)
         im -= min_contrast
         if np.iinfo(out_type).max != max_contrast - min_contrast:
