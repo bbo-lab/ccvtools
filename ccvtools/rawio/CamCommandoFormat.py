@@ -5,44 +5,9 @@ from imageio.core import Format
 from os import SEEK_SET
 import numpy as np
 
-from construct import this, Struct, Bytes, Const, If, Int64ul, Int32ul, Float64l, Byte
-from .utils import *
-
-
-GreenbergString = Struct(
-    "length" / Int32ul,  # > 1 < 1e3
-    "data" / Bytes(this.length),
-    Const(0, Byte)
-)
-
-CamCommandoHeader = Struct(
-    "header_size" / Int32ul,  # < 1e5
-    "camera_type" / GreenbergString,  # b'basler', b'aptina'
-    "header_version" / Float64l,  # > 0 < 100 > 0.13
-    "image_type" / GreenbergString,
-
-    "bytes_per_pixel" / Int32ul,
-    "bits_per_pixel" / Int32ul,
-    "frame_bytes_on_disk" / Int32ul,
-
-    "width" / Int32ul,
-    "height" / Int32ul,
-    "frame_rate" / Float64l,
-
-    "packed" / If(this.header_version >= 0.12, Byte),
-
-    "frame_count" / Int32ul,
-
-    "sensor" / If(this.header_version >= 0.12, Struct(
-        "offset" / Int32ul[2],
-        "size" / Int32ul[2],
-        "clock" / Int64ul,
-        "exposure" / Float64l,
-        "gain" / Float64l
-    ))
-    # ToDo: Check that we are not exceeding header size here!
-)
-
+from ccvtools.rawio.utils import unpack_bits_16_10
+from ccvtools.rawio.ccv_header import CamCommandoHeader
+from construct import Int32ul, Float64l
 
 class CamCommandoFormat(Format):
     """ Adds support to read ccv files with the imagio library """
@@ -79,10 +44,10 @@ class CamCommandoFormat(Format):
 
             self.meta = {
                 "size": self.size,
-                "fps":  self.header.frame_rate,
+                "fps": self.header.frame_rate,
                 "length": self.header.frame_count,
                 "camera_type": self.header.camera_type.data,
-                "image_type":  self.header.image_type.data}
+                "image_type": self.header.image_type.data}
 
             if self.header.header_version >= 0.12:
                 self.meta["sensor"] = self.header.sensor
@@ -107,7 +72,7 @@ class CamCommandoFormat(Format):
                 rawdata = np.fromfile(self.request.get_file(), np.uint8,
                                       int(np.ceil(dimension[0] * dimension[1] * self.header.bits_per_pixel / 8)))
                 frame = unpack_bits_16_10(rawdata).reshape(dimension)  # type: np.uint16
-                
+
             else:
                 # Unpacked files with 8 bits per pixel
                 frame = np.fromfile(self.request.get_file(), np.uint8, dimension[0] * dimension[1]).reshape(dimension)
@@ -124,8 +89,8 @@ class CamCommandoFormat(Format):
 
             # Move to end of frame
             offset = self.header.header_size \
-                   + self.header.frame_bytes_on_disk * index \
-                   + self.header.height * self.header.width
+                     + self.header.frame_bytes_on_disk * index \
+                     + self.header.height * self.header.width
             self.request.get_file().seek(offset, SEEK_SET)
 
             # Read in additional fields
