@@ -6,7 +6,11 @@ Install with `pip install bbo-ccvtools`.
 
 ## Usage
 ### Imageio
-```from ccvtools import rawio``` to add ccv support to imageio.
+```
+from ccvtools import rawio
+import imageio.v2 as iio
+reader = iio.get_reader("video.ccv")
+``` to add ccv support to imageio.
 
 ### Command line
 #### Create a compressed movie with
