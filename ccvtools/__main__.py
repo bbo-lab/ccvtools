@@ -14,7 +14,7 @@ def main():
     parser.add_argument('--codec', required=False, default=['libx264'], nargs=1, type=str)
     parser.add_argument('--quality', required=False, default=[10], nargs=1, type=int)
     parser.add_argument('--idxrange', required=False, nargs=2, type=int, help="Index range. Attention! Python indexing!")
-    parser.add_argument('--maxcontrast', required=False, nargs=1, type=int, help="Maximum brightness", default=None)
+    parser.add_argument('--maxcontrast', required=False, nargs=1, type=int, help="Maximum brightness", default=[None])
 
     args = parser.parse_args()
     
