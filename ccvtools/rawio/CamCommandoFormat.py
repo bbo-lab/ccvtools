@@ -88,9 +88,15 @@ class CamCommandoFormat(Format):
                 return self.meta
 
             # Move to end of frame
-            offset = self.header.header_size \
+            if self.header.packed:
+                offset = self.header.header_size + \
+                     + self.header.frame_bytes_on_disk * index \
+                     +  int(np.ceil(self.header.height * self.header.width * self.header.bits_per_pixel / 8))
+            else:
+                offset = self.header.header_size \
                      + self.header.frame_bytes_on_disk * index \
                      + self.header.height * self.header.width
+                
             self.request.get_file().seek(offset, SEEK_SET)
 
             # Read in additional fields

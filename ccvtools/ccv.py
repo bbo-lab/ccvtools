@@ -133,7 +133,10 @@ def convert(ccv_file, video_file, idx_range, fps=25, codec="libx264", quality=10
 
         # Get max value of movie if not specified
         if i == 0 and max_contrast is None:
-            max_contrast = np.iinfo(np.asarray(im).dtype).max
+            if reader.header.packed:
+                max_contrast = 2 ** reader.header.bits_per_pixel
+            else:
+                max_contrast = np.iinfo(np.asarray(im).dtype).max
 
         # Adjust contrast
         np.clip(im, min_contrast, max_contrast, out=im)
