@@ -117,20 +117,21 @@ class CamCommandoFormat(Format):
             try:
                 self.request.get_file().seek(offset, SEEK_SET)
             except OSError as e:
-                logger.error("File handle: ", self.request.get_file())
-                try:
-                    fd = self.request.get_file().fileno()  # Raises ValueError if closed
-                    logger.error("File descriptor:", fd)
-                except ValueError:
-                    logger.error("Invalid or closed file object")
-                    raise e
-                logger.error("File: ", self.request.get_file().name)
-                logger.error("File readable: ", os.access(self.request.get_file(), os.R_OK))
-                logger.error("File seekable: ", self.request.get_file().seekable())
-                logger.error("File position: ", self.request.get_file()._seek())
                 logger.error("Requested offset: ", f"{offset} ({type(offset)})")
                 logger.error("header_size: ", f"{self.header.header_size} ({type(self.header.header_size)})")
                 logger.error("frame_bytes_on_disk: ", f"{self.header.frame_bytes_on_disk} ({type(self.header.frame_bytes_on_disk)})")
                 logger.error("height: ", f"{self.header.height} ({type(self.header.height)})")
                 logger.error("width: ", f"{self.header.width} ({type(self.header.width)})")
+
+                logger.error("File handle: ", type(self.request.get_file()))
+                try:
+                    fd = self.request.get_file().fileno()  # Raises ValueError if closed
+                    logger.error("File descriptor:", type(fd))
+                except ValueError:
+                    logger.error("Invalid or closed file object")
+                    raise e
+                logger.error("File: ", self.request.get_file().name)
+                logger.error("File seekable: ", self.request.get_file().seekable())
+                logger.error("File position: ", self.request.get_file().tell())
+                logger.error("File readable: ", os.access(self.request.get_file().name, os.R_OK))
                 raise e
