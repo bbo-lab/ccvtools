@@ -1,4 +1,5 @@
 # (c) 2019 Florian Franzen <Florian.Franzen@gmail.com >
+import os
 
 from imageio.core import Format
 
@@ -7,7 +8,10 @@ import numpy as np
 
 from ccvtools.rawio.utils import unpack_bits_16_10
 from ccvtools.rawio.ccv_header import CamCommandoHeader
-from construct import Int32ul, Float64l
+from construct import Int32ul, Float64l, Int64ul
+
+import logging
+logger = logging.getLogger(__name__)
 
 class CamCommandoFormat(Format):
     """ Adds support to read ccv files with the imagio library """
@@ -63,7 +67,7 @@ class CamCommandoFormat(Format):
 
             # Seek to request frame in file
             offset = self.header.header_size + self.header.frame_bytes_on_disk * index
-            self.request.get_file().seek(offset, SEEK_SET)
+            self._seek(offset)
 
             # Read frame from file
             dimension = (self.header.height, self.header.width)
@@ -79,9 +83,14 @@ class CamCommandoFormat(Format):
 
             # Read in additional fields
             index = Int32ul.parse_stream(self.request.get_file())
-            timestamp = Float64l.parse_stream(self.request.get_file())
+            computer_time = Float64l.parse_stream(self.request.get_file())
+            cam_time = Int64ul.parse_stream(self.request.get_file())
 
-            return frame, {"index": index, "timestamp": timestamp}
+            return frame, {"index": index,
+                           "timestamp": computer_time,
+                           "timestamp_computer": computer_time,
+                           "timestamp_cam": cam_time,
+                           }
 
         def _get_meta_data(self, index):
             if index is None:
@@ -91,10 +100,37 @@ class CamCommandoFormat(Format):
             offset = self.header.header_size \
                      + self.header.frame_bytes_on_disk * index \
                      + self.header.height * self.header.width
-            self.request.get_file().seek(offset, SEEK_SET)
+            self._seek(offset)
 
             # Read in additional fields
             index = Int32ul.parse_stream(self.request.get_file())
-            timestamp = Float64l.parse_stream(self.request.get_file())
+            computer_time = Float64l.parse_stream(self.request.get_file())
+            cam_time = Int64ul.parse_stream(self.request.get_file())
 
-            return {"index": index, "timestamp": timestamp}
+            return {"index": index,
+                    "timestamp": computer_time,
+                    "timestamp_computer": computer_time,
+                    "timestamp_cam": cam_time,
+                    }
+
+        def _seek(self, offset: int):
+            try:
+                self.request.get_file().seek(offset, SEEK_SET)
+            except OSError as e:
+                logger.error("File handle: ", self.request.get_file())
+                try:
+                    fd = self.request.get_file().fileno()  # Raises ValueError if closed
+                    logger.error("File descriptor:", fd)
+                except ValueError:
+                    logger.error("Invalid or closed file object")
+                    raise e
+                logger.error("File: ", self.request.get_file().name)
+                logger.error("File readable: ", os.access(self.request.get_file(), os.R_OK))
+                logger.error("File seekable: ", self.request.get_file().seekable())
+                logger.error("File position: ", self.request.get_file()._seek())
+                logger.error("Requested offset: ", offset)
+                logger.error("header_size: ", self.header.header_size)
+                logger.error("frame_bytes_on_disk: ", self.header.frame_bytes_on_disk)
+                logger.error("height: ", self.header.height)
+                logger.error("width: ", self.header.width)
+                raise e
