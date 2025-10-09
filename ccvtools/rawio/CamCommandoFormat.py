@@ -61,6 +61,9 @@ class CamCommandoFormat(Format):
             return self.header.frame_count
 
         def _get_data(self, index):
+            # If index comes in as an int32, offset will become 32bit which may be too small for some realistic numbers
+            index = int(index)
+
             # Check if requested index is in range
             if index >= self.header.frame_count:
                 raise IndexError("Image index %i > %i".format(index, self.header.frame_count))
@@ -95,6 +98,9 @@ class CamCommandoFormat(Format):
         def _get_meta_data(self, index):
             if index is None:
                 return self.meta
+
+            # If index comes in as an int32, offset will become 32bit which may be too small for some realistic numbers
+            index = int(index)
 
             # Move to end of frame
             offset = self.header.header_size \
